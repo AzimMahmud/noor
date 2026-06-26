@@ -1,5 +1,9 @@
 # Noor
 
+<p align="center">
+  <img src="docs/images/logo.png" width="180" alt="Noor logo" />
+</p>
+
 [![Build](https://github.com/azimmahmud/Noor/actions/workflows/build.yml/badge.svg)](https://github.com/azimmahmud/Noor/actions/workflows/build.yml)
 [![Tests](https://github.com/azimmahmud/Noor/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/azimmahmud/Noor/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -8,9 +12,12 @@
 
 **Noor** (نور, "light") is a cross-platform Islamic prayer-time companion built with **Uno Platform** and **.NET 10**. It shows accurate daily prayer times, a live countdown to the next prayer, a Hijri calendar with Islamic events, a date converter, and an optional full-screen focus overlay during prayer.
 
-> screenshots coming soon — drop them in `docs/screenshots/` and update the paths below.
-
-![Noor dashboard](docs/screenshots/dashboard.png)
+<table align="center">
+  <tr>
+    <td align="center"><img src="docs/screenshots/dashboard.png" width="540" alt="Noor dashboard" /></td>
+  </tr>
+  <tr><td align="center"><sub>Dashboard — live countdown to the next prayer</sub></td></tr>
+</table>
 
 ---
 
