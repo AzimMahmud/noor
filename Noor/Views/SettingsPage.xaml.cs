@@ -1,9 +1,9 @@
+using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Navigation;
 using Noor.Models;
 using Noor.Services;
-using System;
-using System.Threading.Tasks;
 
 namespace Noor.Views;
 
@@ -124,8 +124,11 @@ public sealed partial class SettingsPage : Page
                     madhab = Madhab.Hanafi;
 
                 var calcMethod = CalculationMethod.MuslimWorldLeague;
-                if (CalculationMethodBox.SelectedItem is ComboBoxItem calcItem)
-                    Enum.TryParse<CalculationMethod>(calcItem.Tag?.ToString(), out var method);
+                if (CalculationMethodBox.SelectedItem is ComboBoxItem calcItem &&
+                    Enum.TryParse<CalculationMethod>(calcItem.Tag?.ToString(), out var method))
+                {
+                    calcMethod = method;
+                }
 
                 _mainViewModel.Settings.Location = location;
                 _mainViewModel.Settings.Madhab = madhab;
