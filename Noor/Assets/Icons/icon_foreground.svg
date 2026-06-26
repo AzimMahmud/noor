@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 456 456">
+  <!-- Mosque silhouette on transparent background (foreground layer for adaptive icon) -->
+  <g transform="translate(128, 100) scale(2)" fill="white">
+    <!-- Main dome -->
+    <path d="M50 10 C30 10 15 30 15 50 L15 85 L85 85 L85 50 C85 30 70 10 50 10 Z M50 12 C68 12 83 30 83 50 L83 55 C70 52 58 50 50 50 C42 50 30 52 17 55 L17 50 C17 30 32 12 50 12 Z" opacity="0.95"/>
+    <!-- Central small dome -->
+    <path d="M42 48 C42 42 46 38 50 38 C54 38 58 42 58 48 Z" opacity="0.8"/>
+    <!-- Left minaret -->
+    <rect x="8" y="30" width="6" height="55" rx="1" opacity="0.9"/>
+    <circle cx="11" cy="28" r="4" opacity="0.9"/>
+    <!-- Right minaret -->
+    <rect x="86" y="30" width="6" height="55" rx="1" opacity="0.9"/>
+    <circle cx="89" cy="28" r="4" opacity="0.9"/>
+    <!-- Door -->
+    <path d="M43 85 L43 65 C43 60 46 57 50 57 C54 57 57 60 57 65 L57 85 Z" opacity="0.7"/>
+  </g>
+  <!-- Crescent moon -->
+  <g transform="translate(218, 60)" fill="white">
+    <path d="M10 0 C4.5 0 0 4.5 0 10 C0 15.5 4.5 20 10 20 C12.5 20 14.8 18.6 16.2 16.5 C14 17.5 11.5 17 10 15 C8.5 13 8.5 10 10 8.5 C11.5 7 14 6.5 16.2 7.5 C14.8 5.4 12.5 3.5 10 0 Z" opacity="0.95"/>
+    <circle cx="17" cy="4" r="1.5" opacity="0.9"/>
+  </g>
+</svg>

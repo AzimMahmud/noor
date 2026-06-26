@@ -1,0 +1,10 @@
+{
+  "background_color": "#ffffff",
+  "description": "SalatReminder",
+  "display": "standalone",
+  "name": "SalatReminder",
+  "short_name": "SalatReminder",
+  "start_url": "/index.html",
+  "theme_color": "#ffffff",
+  "scope": "/"
+}

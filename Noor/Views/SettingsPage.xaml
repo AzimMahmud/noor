@@ -1,0 +1,378 @@
+<Page x:Class="Noor.Views.SettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:Noor.Views"
+      xmlns:models="using:Noor.Models"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      NavigationCacheMode="Disabled"
+      Background="{ThemeResource PageBackgroundBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- HEADER -->
+        <Grid Grid.Row="0" Padding="24,24,24,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0"
+                    x:Name="BackButton"
+                    Click="OnBackClick"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource BackButtonStyle}">
+                <FontIcon Glyph="&#xE72B;" FontSize="18"
+                          Foreground="{ThemeResource PrimaryTextBrush}"/>
+            </Button>
+
+            <StackPanel Grid.Column="1" Spacing="4" Margin="16,0,0,0">
+                <TextBlock Text="Settings" Style="{StaticResource SettingsTitleStyle}"/>
+                <TextBlock Text="Configure your prayer time preferences"
+                           Style="{StaticResource SettingsSubtitleStyle}"/>
+            </StackPanel>
+
+            <Button Grid.Column="2"
+                    x:Name="SaveButton"
+                    Click="OnSaveClick"
+                    Content="Save"
+                    Style="{StaticResource SaveButtonStyle}"/>
+        </Grid>
+
+        <!-- CONTENT -->
+        <ScrollViewer Grid.Row="1" Padding="24,16,24,24"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="20" MaxWidth="600" HorizontalAlignment="Center">
+
+                <!-- LOCATION SETTINGS -->
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Width="32" Height="32" CornerRadius="8"
+                                    Background="{ThemeResource PrimarySurfaceBrush}">
+                                <FontIcon Glyph="&#xE909;" FontSize="16"
+                                          Foreground="{ThemeResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Location" Style="{StaticResource SettingsSectionStyle}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Spacing="12">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="CITY NAME" Style="{StaticResource SettingsFieldLabelStyle}"/>
+                                <TextBox x:Name="CityNameBox" Text="Makkah"
+                                         PlaceholderText="Enter city name"
+                                         Style="{StaticResource SettingsTextBoxStyle}"/>
+                            </StackPanel>
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="COUNTRY" Style="{StaticResource SettingsFieldLabelStyle}"/>
+                                <TextBox x:Name="CountryNameBox" Text="Saudi Arabia"
+                                         PlaceholderText="Enter country name"
+                                         Style="{StaticResource SettingsTextBoxStyle}"/>
+                            </StackPanel>
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Spacing="4">
+                                    <TextBlock Text="LATITUDE" Style="{StaticResource SettingsFieldLabelStyle}"/>
+                                    <TextBox x:Name="LatitudeBox" Text="21.4225"
+                                             PlaceholderText="Latitude"
+                                             Style="{StaticResource SettingsTextBoxStyle}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="4">
+                                    <TextBlock Text="LONGITUDE" Style="{StaticResource SettingsFieldLabelStyle}"/>
+                                    <TextBox x:Name="LongitudeBox" Text="39.8262"
+                                             PlaceholderText="Longitude"
+                                             Style="{StaticResource SettingsTextBoxStyle}"/>
+                                </StackPanel>
+                            </Grid>
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="TIMEZONE (UTC)" Style="{StaticResource SettingsFieldLabelStyle}"/>
+                                <ComboBox x:Name="TimeZoneBox" PlaceholderText="Select timezone"
+                                          Style="{StaticResource SettingsComboBoxStyle}">
+                                    <ComboBoxItem Content="UTC-12" Tag="-12"/>
+                                    <ComboBoxItem Content="UTC-11" Tag="-11"/>
+                                    <ComboBoxItem Content="UTC-10" Tag="-10"/>
+                                    <ComboBoxItem Content="UTC-9" Tag="-9"/>
+                                    <ComboBoxItem Content="UTC-8" Tag="-8"/>
+                                    <ComboBoxItem Content="UTC-7" Tag="-7"/>
+                                    <ComboBoxItem Content="UTC-6" Tag="-6"/>
+                                    <ComboBoxItem Content="UTC-5" Tag="-5"/>
+                                    <ComboBoxItem Content="UTC-4" Tag="-4"/>
+                                    <ComboBoxItem Content="UTC-3" Tag="-3"/>
+                                    <ComboBoxItem Content="UTC-2" Tag="-2"/>
+                                    <ComboBoxItem Content="UTC-1" Tag="-1"/>
+                                    <ComboBoxItem Content="UTC+0" Tag="0"/>
+                                    <ComboBoxItem Content="UTC+1" Tag="1"/>
+                                    <ComboBoxItem Content="UTC+2" Tag="2"/>
+                                    <ComboBoxItem Content="UTC+3" Tag="3"/>
+                                    <ComboBoxItem Content="UTC+4" Tag="4"/>
+                                    <ComboBoxItem Content="UTC+5" Tag="5"/>
+                                    <ComboBoxItem Content="UTC+6" Tag="6"/>
+                                    <ComboBoxItem Content="UTC+7" Tag="7"/>
+                                    <ComboBoxItem Content="UTC+8" Tag="8"/>
+                                    <ComboBoxItem Content="UTC+9" Tag="9"/>
+                                    <ComboBoxItem Content="UTC+10" Tag="10"/>
+                                    <ComboBoxItem Content="UTC+11" Tag="11"/>
+                                    <ComboBoxItem Content="UTC+12" Tag="12"/>
+                                </ComboBox>
+                            </StackPanel>
+                            <Button x:Name="DetectLocationButton"
+                                    Click="OnDetectLocationClick"
+                                    Content="Auto-detect from IP"
+                                    Style="{StaticResource DetectLocationButtonStyle}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- CALCULATION SETTINGS -->
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Width="32" Height="32" CornerRadius="8"
+                                    Background="{ThemeResource PrimarySurfaceBrush}">
+                                <FontIcon Glyph="&#xE9F9;" FontSize="16"
+                                          Foreground="{ThemeResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Calculation" Style="{StaticResource SettingsSectionStyle}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Spacing="12">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="MADHAB (SCHOOL OF JURISPRUDENCE)"
+                                           Style="{StaticResource SettingsFieldLabelStyle}"/>
+                                <ComboBox x:Name="MadhabBox" PlaceholderText="Select Madhab"
+                                          Style="{StaticResource SettingsComboBoxStyle}">
+                                    <ComboBoxItem Content="Shafi (Standard)" Tag="Shafi"/>
+                                    <ComboBoxItem Content="Hanafi (Later Asr)" Tag="Hanafi"/>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="CALCULATION METHOD"
+                                           Style="{StaticResource SettingsFieldLabelStyle}"/>
+                                <ComboBox x:Name="CalculationMethodBox"
+                                          PlaceholderText="Select calculation method"
+                                          Style="{StaticResource SettingsComboBoxStyle}">
+                                    <ComboBoxItem Content="Muslim World League" Tag="MuslimWorldLeague"/>
+                                    <ComboBoxItem Content="Islamic Society of North America (ISNA)" Tag="ISNA"/>
+                                    <ComboBoxItem Content="Egyptian General Authority" Tag="Egyptian"/>
+                                    <ComboBoxItem Content="Umm Al-Qura University, Makkah" Tag="Makkah"/>
+                                    <ComboBoxItem Content="University of Islamic Sciences, Karachi" Tag="Karachi"/>
+                                    <ComboBoxItem Content="Tehran Institute of Geophysics" Tag="Tehran"/>
+                                    <ComboBoxItem Content="Shia Ithna-Ashari (Jafari)" Tag="Jafari"/>
+                                    <ComboBoxItem Content="Gulf Region" Tag="Gulf"/>
+                                    <ComboBoxItem Content="Kuwait" Tag="Kuwait"/>
+                                    <ComboBoxItem Content="Qatar" Tag="Qatar"/>
+                                    <ComboBoxItem Content="Singapore" Tag="Singapore"/>
+                                    <ComboBoxItem Content="Turkey" Tag="Turkey"/>
+                                    <ComboBoxItem Content="Moonsighting Committee" Tag="MoonsightingCommittee"/>
+                                    <ComboBoxItem Content="Dubai" Tag="Dubai"/>
+                                </ComboBox>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- NOTIFICATION SETTINGS -->
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Width="32" Height="32" CornerRadius="8"
+                                    Background="{ThemeResource PrimarySurfaceBrush}">
+                                <FontIcon Glyph="&#xE7ED;" FontSize="16"
+                                          Foreground="{ThemeResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Notifications" Style="{StaticResource SettingsSectionStyle}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Spacing="16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Spacing="2">
+                                    <TextBlock Text="Prayer Notifications"
+                                               Style="{StaticResource SettingsToggleTitleStyle}"/>
+                                    <TextBlock Text="Show notification at each prayer time"
+                                               Style="{StaticResource SettingsToggleDescStyle}"/>
+                                </StackPanel>
+                                <ToggleSwitch x:Name="EnableNotificationsToggle"
+                                              Grid.Column="1" IsOn="True"
+                                              Toggled="OnEnableNotificationsToggled"
+                                              Style="{StaticResource SettingsToggleStyle}"/>
+                            </Grid>
+                            <Border Style="{StaticResource ThinDivider}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Spacing="2">
+                                    <TextBlock Text="Play Azan Audio"
+                                               Style="{StaticResource SettingsToggleTitleStyle}"/>
+                                    <TextBlock Text="Play azan sound at prayer time"
+                                               Style="{StaticResource SettingsToggleDescStyle}"/>
+                                </StackPanel>
+                                <ToggleSwitch x:Name="EnableAzanToggle"
+                                              Grid.Column="1" IsOn="True"
+                                              Toggled="OnEnableAzanToggled"
+                                              Style="{StaticResource SettingsToggleStyle}"/>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- DISPLAY SETTINGS -->
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Width="32" Height="32" CornerRadius="8"
+                                    Background="{ThemeResource PrimarySurfaceBrush}">
+                                <FontIcon Glyph="&#xE770;" FontSize="16"
+                                          Foreground="{ThemeResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Display" Style="{StaticResource SettingsSectionStyle}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="24-Hour Time Format"
+                                           Style="{StaticResource SettingsToggleTitleStyle}"/>
+                                <TextBlock Text="Use 24-hour clock instead of 12-hour AM/PM"
+                                           Style="{StaticResource SettingsToggleDescStyle}"/>
+                            </StackPanel>
+                            <ToggleSwitch x:Name="Use24HourToggle"
+                                          Grid.Column="1" IsOn="True"
+                                          Toggled="OnUse24HourToggled"
+                                          Style="{StaticResource SettingsToggleStyle}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- APPEARANCE SETTINGS -->
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Width="32" Height="32" CornerRadius="8"
+                                    Background="{ThemeResource PrimarySurfaceBrush}">
+                                <FontIcon Glyph="&#xE771;" FontSize="16"
+                                          Foreground="{ThemeResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Appearance" Style="{StaticResource SettingsSectionStyle}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="Dark Mode"
+                                           Style="{StaticResource SettingsToggleTitleStyle}"/>
+                                <TextBlock Text="Use dark theme for the application"
+                                           Style="{StaticResource SettingsToggleDescStyle}"/>
+                            </StackPanel>
+                            <ToggleSwitch x:Name="DarkModeToggle"
+                                          Grid.Column="1" IsOn="False"
+                                          Toggled="OnDarkModeToggled"
+                                          Style="{StaticResource SettingsToggleStyle}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- BLOCK SCREEN SETTINGS -->
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Width="32" Height="32" CornerRadius="8"
+                                    Background="{ThemeResource PrimarySurfaceBrush}">
+                                <FontIcon Glyph="&#xE730;" FontSize="16"
+                                          Foreground="{ThemeResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Block Screen" Style="{StaticResource SettingsSectionStyle}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Spacing="16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Spacing="2">
+                                    <TextBlock Text="Enable Block Screen"
+                                               Style="{StaticResource SettingsToggleTitleStyle}"/>
+                                    <TextBlock Text="Show full-screen overlay when prayer begins"
+                                               Style="{StaticResource SettingsToggleDescStyle}"/>
+                                </StackPanel>
+                                <ToggleSwitch x:Name="ShowBlockScreenToggle"
+                                              Grid.Column="1" IsOn="True"
+                                              Toggled="OnShowBlockScreenToggled"
+                                              Style="{StaticResource SettingsToggleStyle}"/>
+                            </Grid>
+                            <Border Style="{StaticResource ThinDivider}"/>
+                            <StackPanel Spacing="8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="BLOCK DURATION (MINUTES)"
+                                               Style="{StaticResource SettingsFieldLabelStyle}"/>
+                                    <TextBlock x:Name="BlockDurationText" Text="20"
+                                               Style="{StaticResource SettingsFieldLabelStyle}"/>
+                                </Grid>
+                                <Slider x:Name="BlockDurationSlider"
+                                        Minimum="1" Maximum="60" Value="20"
+                                        ValueChanged="OnBlockDurationChanged"
+                                        Style="{StaticResource SettingsSliderStyle}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- ABOUT -->
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Width="32" Height="32" CornerRadius="8"
+                                    Background="{ThemeResource PrimarySurfaceBrush}">
+                                <FontIcon Glyph="&#xE946;" FontSize="16"
+                                          Foreground="{ThemeResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="About" Style="{StaticResource SettingsSectionStyle}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Salat Reminder" FontSize="18" FontWeight="SemiBold"
+                                       Foreground="{ThemeResource PrimaryTextBrush}"/>
+                            <TextBlock Text="Version 1.0" Style="{StaticResource CaptionStyle}"/>
+                            <TextBlock Text="Accurate Islamic prayer times based on astronomical calculations. Built with Uno Platform."
+                                       Style="{StaticResource CaptionStyle}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Height="8"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

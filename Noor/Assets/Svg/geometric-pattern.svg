@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="currentColor" opacity="0.12">
+  <!-- Islamic geometric pattern - octagonal star tessellation -->
+  <defs>
+    <pattern id="islamicPattern" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+      <!-- Central octagonal star -->
+      <polygon points="25,5 30,15 40,15 35,22 38,32 25,27 12,32 15,22 10,15 20,15" fill="currentColor"/>
+      <!-- Corner diamonds -->
+      <polygon points="0,0 5,5 0,10 -5,5" fill="currentColor"/>
+      <polygon points="50,0 55,5 50,10 45,5" fill="currentColor"/>
+      <polygon points="0,50 5,55 0,60 -5,55" fill="currentColor"/>
+      <polygon points="50,50 55,55 50,60 45,55" fill="currentColor"/>
+      <!-- Connecting lines -->
+      <line x1="25" y1="0" x2="25" y2="5" stroke="currentColor" stroke-width="0.5"/>
+      <line x1="25" y1="32" x2="25" y2="50" stroke="currentColor" stroke-width="0.5"/>
+      <line x1="0" y1="25" x2="10" y2="15" stroke="currentColor" stroke-width="0.5"/>
+      <line x1="40" y1="15" x2="50" y2="25" stroke="currentColor" stroke-width="0.5"/>
+      <line x1="0" y1="25" x2="12" y2="32" stroke="currentColor" stroke-width="0.5"/>
+      <line x1="38" y1="32" x2="50" y2="25" stroke="currentColor" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+  <rect width="200" height="200" fill="url(#islamicPattern)"/>
+</svg>

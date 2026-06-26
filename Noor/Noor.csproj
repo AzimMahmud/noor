@@ -1,0 +1,75 @@
+<Project Sdk="Uno.Sdk">
+  <PropertyGroup>
+    <!-- Desktop platforms (Windows/Linux) are built by default -->
+    <TargetFrameworks>net10.0-desktop</TargetFrameworks>
+
+    <!-- Additional platforms - uncomment to enable -->
+    <!-- <TargetFrameworks>$(TargetFrameworks);net10.0-android</TargetFrameworks> -->
+    <!-- <TargetFrameworks>$(TargetFrameworks);net10.0-ios</TargetFrameworks> -->
+    <!-- <TargetFrameworks>$(TargetFrameworks);net10.0-maccatalyst</TargetFrameworks> -->
+
+    <!-- Windows is only available on Windows OS -->
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+
+    <OutputType>Exe</OutputType>
+    <UnoSingleProject>true</UnoSingleProject>
+
+    <!-- Display name -->
+    <ApplicationTitle>Noor</ApplicationTitle>
+    <!-- App Identifier -->
+    <ApplicationId>com.noor.salatreminder</ApplicationId>
+    <!-- Versions -->
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <!-- Package Publisher -->
+    <ApplicationPublisher>Noor</ApplicationPublisher>
+    <!-- Package Description -->
+    <Description>Islamic prayer time companion — accurate calculations, Hijri calendar, and beautiful UI.</Description>
+
+    <!--
+      UnoFeatures are used to quickly add and manage features enabled for your app.
+      https://aka.platform.uno/singleproject-features
+    -->
+    <UnoFeatures>
+      SkiaRenderer;
+      Svg;
+    </UnoFeatures>
+
+    <!-- Android-specific settings -->
+    <SupportedOSPlatformAndroid Condition=" '$(TargetFramework)' == 'net10.0-android' ">21.0</SupportedOSPlatformAndroid>
+    <MandroidRespectRuntimeRules>true</MandroidRespectRuntimeRules>
+
+    <!-- iOS-specific settings -->
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::IsOSPlatform('ios'))">13.0</SupportedOSPlatformVersion>
+
+    <!-- Mac Catalyst settings -->
+    <SupportedOSPlatformVersion Condition=" '$(TargetFramework)' == 'net10.0-maccatalyst' ">14.0</SupportedOSPlatformVersion>
+
+    <!-- Windows settings -->
+    <TargetPlatformMinVersion Condition=" '$(TargetFramework)' == 'net10.0-windows10.0.19041.0' ">10.0.17763.0</TargetPlatformMinVersion>
+    <WindowsSdkTargetPlatformVersion>10.0</WindowsSdkTargetPlatformVersion>
+    <WindowsPackageType>None</WindowsPackageType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="NAudio" />
+    <PackageReference Include="Quartz" />
+  </ItemGroup>
+
+  <!-- Android permissions -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0-android' ">
+    <AndroidPermission Include="android.permission.ACCESS_NETWORK_STATE" />
+    <AndroidPermission Include="android.permission.INTERNET" />
+    <AndroidPermission Include="android.permission.ACCESS_COARSE_LOCATION" />
+    <AndroidPermission Include="android.permission.ACCESS_FINE_LOCATION" />
+    <AndroidPermission Include="android.permission.SCHEDULE_EXACT_ALARM" />
+    <AndroidPermission Include="android.permission.POST_NOTIFICATIONS" />
+  </ItemGroup>
+
+  <!-- iOS Info.plist -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0-ios' ">
+    <BundleResource Include="Resources\icon.png" />
+  </ItemGroup>
+
+</Project>

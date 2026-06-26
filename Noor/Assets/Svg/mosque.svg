@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="currentColor">
+  <!-- Main dome -->
+  <path d="M50 10 C30 10 15 30 15 50 L15 85 L85 85 L85 50 C85 30 70 10 50 10 Z M50 12 C68 12 83 30 83 50 L83 55 C70 52 58 50 50 50 C42 50 30 52 17 55 L17 50 C17 30 32 12 50 12 Z" opacity="0.9"/>
+  <!-- Central small dome -->
+  <path d="M42 48 C42 42 46 38 50 38 C54 38 58 42 58 48 Z" opacity="0.7"/>
+  <!-- Left minaret -->
+  <rect x="8" y="30" width="6" height="55" rx="1" opacity="0.85"/>
+  <circle cx="11" cy="28" r="4" opacity="0.85"/>
+  <rect x="9" y="26" width="4" height="3" rx="1" opacity="0.85"/>
+  <!-- Right minaret -->
+  <rect x="86" y="30" width="6" height="55" rx="1" opacity="0.85"/>
+  <circle cx="89" cy="28" r="4" opacity="0.85"/>
+  <rect x="87" y="26" width="4" height="3" rx="1" opacity="0.85"/>
+  <!-- Door -->
+  <path d="M43 85 L43 65 C43 60 46 57 50 57 C54 57 57 60 57 65 L57 85 Z" opacity="0.6"/>
+  <!-- Windows -->
+  <circle cx="35" cy="55" r="3" opacity="0.5"/>
+  <circle cx="65" cy="55" r="3" opacity="0.5"/>
+</svg>
