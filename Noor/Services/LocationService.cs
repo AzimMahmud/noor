@@ -5,12 +5,13 @@ using Noor.Models;
 namespace Noor.Services;
 
 /// <summary>
-/// Service for determining user location via IP geolocation API.
+/// Service for determining user location via IP geolocation.
+/// Uses the free, HTTPS-only ipwho.is endpoint (no API key required).
 /// </summary>
-public class LocationService
+public sealed class LocationService : IDisposable
 {
     private readonly HttpClient _httpClient;
-    private const string IpApiUrl = "http://ip-api.com/json/";
+    private const string IpApiUrl = "https://ipwho.is/";
 
     public LocationService()
     {
@@ -21,28 +22,28 @@ public class LocationService
     }
 
     /// <summary>
-    /// Gets the current location based on IP address using ip-api.com.
+    /// Gets the current location based on IP address.
     /// </summary>
-    /// <returns>Coordinates with city and country information</returns>
+    /// <returns>Coordinates with city and country information, or null if unavailable.</returns>
     public async Task<Coordinates?> GetLocationFromIpAsync()
     {
         try
         {
-            var response = await _httpClient.GetStringAsync($"{IpApiUrl}?fields=status,message,country,countryCode,city,lat,lon,timezone,offset");
+            var response = await _httpClient.GetStringAsync(IpApiUrl);
 
-            var result = JsonSerializer.Deserialize<IpApiResponse>(response);
+            var result = JsonSerializer.Deserialize<IpWhoResponse>(response);
 
-            if (result == null || !result.Success || result.Lat == null || result.Lon == null)
+            if (result == null || !result.Success || result.Latitude == null || result.Longitude == null)
             {
                 return null;
             }
 
-            // Convert offset from seconds to hours
-            var timezoneOffset = (result.Offset ?? 0) / 3600.0;
+            // ipwho.is returns the UTC offset in seconds; convert to hours.
+            var timezoneOffset = (result.Timezone?.Offset ?? 0) / 3600.0;
 
             return new Coordinates(
-                result.Lat.Value,
-                result.Lon.Value,
+                result.Latitude.Value,
+                result.Longitude.Value,
                 result.City,
                 result.Country,
                 timezoneOffset
@@ -71,16 +72,13 @@ public class LocationService
     }
 
     /// <summary>
-    /// Validates if coordinates are valid.
+    /// Validates if coordinates are within valid ranges.
     /// </summary>
     public bool IsValidCoordinates(double latitude, double longitude)
     {
         return latitude is >= -90 and <= 90 && longitude is >= -180 and <= 180;
     }
 
-    /// <summary>
-    /// Disposes the HTTP client.
-    /// </summary>
     public void Dispose()
     {
         _httpClient?.Dispose();
@@ -88,40 +86,38 @@ public class LocationService
 }
 
 /// <summary>
-/// Response model from ip-api.com.
+/// Response model from ipwho.is.
 /// </summary>
-internal record IpApiResponse
+internal sealed record IpWhoResponse
 {
-    [JsonPropertyName("status")]
-    public string? Status { get; init; }
-
-    [JsonPropertyName("message")]
-    public string? Message { get; init; }
+    [JsonPropertyName("success")]
+    public bool Success { get; init; }
 
     [JsonPropertyName("country")]
     public string? Country { get; init; }
 
-    [JsonPropertyName("countryCode")]
-    public string? CountryCode { get; init; }
-
     [JsonPropertyName("city")]
     public string? City { get; init; }
 
-    [JsonPropertyName("lat")]
-    public double? Lat { get; init; }
+    [JsonPropertyName("latitude")]
+    public double? Latitude { get; init; }
 
-    [JsonPropertyName("lon")]
-    public double? Lon { get; init; }
+    [JsonPropertyName("longitude")]
+    public double? Longitude { get; init; }
 
     [JsonPropertyName("timezone")]
-    public string? Timezone { get; init; }
+    public IpWhoTimezone? Timezone { get; init; }
+}
 
+internal sealed record IpWhoTimezone
+{
+    [JsonPropertyName("id")]
+    public string? Id { get; init; }
+
+    /// <summary>UTC offset in seconds.</summary>
     [JsonPropertyName("offset")]
-    public double? Offset { get; init; }
+    public int Offset { get; init; }
 
-    [JsonPropertyName("query")]
-    public string? Ip { get; init; }
-
-    [JsonIgnore]
-    public bool Success => Status == "success";
+    [JsonPropertyName("utc")]
+    public string? Utc { get; init; }
 }
