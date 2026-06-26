@@ -10,12 +10,19 @@
 | Field | Value |
 |---|---|
 | Solution | `Noor.sln` |
-| Projects | `Noor.Core` (library), `Noor.App` (Avalonia UI), `Noor.Tests` |
-| SDK | .NET 8 (`global.json` pins the SDK) |
-| UI framework | Avalonia UI 11 (MVVM via CommunityToolkit.Mvvm) |
-| Language | C# 12 (`ImplicitUsings`, `Nullable` enabled) |
-| Primary targets | Windows, Linux, macOS (self-contained desktop) |
+| App project | `Noor/Noor.csproj` (Uno Platform **single project**) |
+| Test project | `Noor.Tests/Noor.Tests.csproj` (xUnit) |
+| SDK | .NET 10 (`global.json` pins the SDK) |
+| UI framework | Uno Platform 6.5 (WinUI API surface, Skia renderer) |
+| Language | C# 14 (`ImplicitUsings`, `Nullable` enabled) |
+| Pattern | MVVM with manual `INotifyPropertyChanged` |
+| Primary targets | Windows (`net10.0-windows10.0.19041.0`), Linux (`net10.0-desktop`) |
+| Scaffolded (opt-in) | Android, iOS, macOS Catalyst (uncomment in `Noor.csproj`) |
 | Purpose | Islamic prayer-time reminder: accurate times, Hijri calendar, azan audio, focus overlay |
+
+> **Note:** This is a **Uno Platform** app (WinUI API surface rendered by Skia), **not** Avalonia.
+> If you previously saw references to Avalonia, `Noor.Core` / `Noor.App` / `Noor.Tests` projects,
+> LibVLCSharp, or the `Adhan` NuGet package, those were outdated. The real stack is documented here.
 
 ---
 
@@ -24,40 +31,39 @@
 ```
 Noor/
 ├── Noor.sln
-├── Directory.Build.props          # Nullable, ImplicitUsings, CPM
-├── Directory.Packages.props       # Central Package Management
-├── global.json
-├── Noor.Core/                     # Pure domain logic (no UI deps)
+├── Directory.Build.props        # Nullable, ImplicitUsings, CPM, NoWarn
+├── Directory.Packages.props     # Central Package Management (NAudio, Quartz, MS.Extensions.Http)
+├── global.json                  # Uno.Sdk version + SDK allowPrerelease:false
+├── Noor/                        # Main Uno single-project app
+│   ├── App.xaml(.cs)            # App class, merged resource dictionaries, navigation root
+│   ├── GlobalUsings.cs          # project-wide global usings
 │   ├── Models/
-│   │   ├── AppSettings.cs         # user settings model + CalculationMethod enum + JSON persistence
-│   │   ├── Coordinates.cs         # lat/long/city/country/timezoneOffset record
-│   │   ├── Madhab.cs              # Shafi | Hanafi enum
-│   │   └── PrayerTimes.cs         # prayer times record + PrayerType enum + Arabic/English names
-│   ├── Services/
-│   │   ├── PrayerCalculatorService.cs   # wraps the Adhan calculation library
+│   │   ├── AppSettings.cs       # user settings model + CalculationMethod enum + JSON persistence
+│   │   ├── Coordinates.cs       # lat/long/city/country/timezoneOffset record
+│   │   ├── Madhab.cs            # Shafi | Hanafi enum
+│   │   └── PrayerTimes.cs       # prayer times record + PrayerType enum + Arabic/English names
+│   ├── Services/                # business logic (NO UI dependency)
+│   │   ├── PrayerCalculatorService.cs   # built-in astronomical prayer-time engine
 │   │   ├── HijriDateService.cs          # static Gregorian↔Hijri (UmAlQuraCalendar) + events
 │   │   ├── SchedulerService.cs          # Quartz.NET scheduling + PrayerJob
-│   │   ├── LocationService.cs           # IP geolocation (ip-api.com)
-│   │   ├── AudioService.cs              # LibVLCSharp azan playback
+│   │   ├── LocationService.cs           # HTTPS IP geolocation (ipwho.is)
+│   │   ├── AudioService.cs              # NAudio azan playback
 │   │   └── NotificationService.cs       # prayer/reminder notifications
-│   └── Extensions/
-├── Noor.App/                      # Avalonia UI project
-│   ├── App.axaml(.cs)             # app lifecycle, DI container, theme
-│   ├── ViewModels/                # ObservableObject view models
-│   │   ├── MainViewModel.cs
+│   ├── ViewModels/
+│   │   ├── MainPageViewModel.cs         # dashboard state + countdown
 │   │   └── SettingsViewModel.cs
-│   ├── Views/                     # axaml windows/controls + code-behind
-│   │   ├── MainWindow.axaml(.cs)
-│   │   ├── SettingsView.axaml(.cs)
-│   │   ├── HijriCalendarView.axaml(.cs)
-│   │   └── BlockScreenOverlay.axaml(.cs)
-│   ├── Assets/                    # icons, fonts, azan audio fallback
-│   ├── Styles/                    # Colors.axaml, Controls.axaml, TextStyles.axaml
-│   ├── Converters/
-│   ├── appsettings.json           # logging config (NOT user settings)
-│   └── Program.cs                 # Avalonia entry point
-├── Noor.Tests/                    # xUnit + FluentAssertions
-└── .github/                       # CI workflows, issue/PR templates, funding
+│   ├── Views/
+│   │   ├── MainPage.xaml(.cs)           # dashboard
+│   │   ├── SettingsPage.xaml(.cs)       # configuration
+│   │   ├── HijriCalendarPage.xaml(.cs)  # calendar + converter + reminders
+│   │   └── BlockScreenOverlay.xaml(.cs) # full-screen focus overlay
+│   ├── Styles/                  # Colors.xaml, Controls.xaml, TextStyles.xaml
+│   ├── Assets/                  # SVG icons, splash, geometric patterns
+│   ├── Platforms/               # Desktop, Android, iOS, WebAssembly entry points
+│   ├── Properties/              # launchSettings, publish profiles
+│   └── Strings/                 # localized resources (en)
+├── Noor.Tests/                  # xUnit + FluentAssertions
+└── .github/                     # CI workflows, issue/PR templates, funding
 ```
 
 ---
@@ -69,15 +75,10 @@ Managed in `Directory.Packages.props`. Do **not** add `Version=` to `<PackageRef
 
 | Package | Used by | Purpose |
 |---|---|---|
-| `Avalonia` | Noor.App | UI framework |
-| `Avalonia.Desktop`, `Avalonia.Themes.Fluent` | Noor.App | Desktop target + Fluent theme |
-| `Avalonia.Diagnostics` | Noor.App (Debug) | Dev overlay |
-| `CommunityToolkit.Mvvm` | Noor.App | Source-generator MVVM (`ObservableProperty`, `RelayCommand`) |
-| `Adhan` | Noor.Core | Accurate Islamic prayer-time calculation |
-| `Quartz` | Noor.Core | Job scheduling (prayer alerts + daily recalculation) |
-| `LibVLCSharp` + `VideoLAN.LibVLC.*` | Noor.Core | Azan audio playback (cross-platform) |
-| `Microsoft.Extensions.DependencyInjection` | Noor.App | DI container |
-| `Microsoft.Extensions.Http` | Noor.Core | `HttpClient` factory for geolocation |
+| `Uno.Sdk` | Noor | UI framework, single-project model (version pinned in `global.json`) |
+| `Quartz` | Noor | Job scheduling (prayer alerts + daily recalculation) |
+| `NAudio` | Noor | Azan audio playback (**Windows-native**) |
+| `Microsoft.Extensions.Http` | Noor | `HttpClient` factory support |
 | `xunit`, `xunit.runner.visualstudio` | Noor.Tests | Unit testing |
 | `FluentAssertions` | Noor.Tests | Readable assertions |
 | `Microsoft.NET.Test.Sdk` | Noor.Tests | Test host |
@@ -87,28 +88,23 @@ Managed in `Directory.Packages.props`. Do **not** add `Version=` to `<PackageRef
 ## Architecture Rules
 
 ### Separation of Concerns
-- `Noor.Core` contains **all** business logic and must have **no dependency** on Avalonia or any UI
-  namespace. It must be referenceable from `Noor.Tests` (a plain `net8.0` project) without pulling in UI.
-- `Noor.App` contains only UI (views, view models, converters, styling). It references `Noor.Core`.
-- View models live in `Noor.App/ViewModels` and depend on services from `Noor.Core` (injected).
-- Code-behind (`*.axaml.cs`) must stay thin: delegate to the view model. No business logic in views.
+- `Noor/Services/` contains **all** business logic and must have **no dependency** on
+  `Microsoft.UI.Xaml` or any view namespace.
+- `Models/` are plain data types (records/enums) with no UI dependency.
+- `ViewModels/` may reference Services and Models.
+- `Views/` (`.xaml.cs`) reference ViewModels and Services; they own UI-thread marshalling
+  via `DispatcherQueue.TryEnqueue(...)`.
 
-### Dependency Injection
-- The DI container is composed in `Noor.App/Program.cs` (or `App.axaml.cs`):
-  - `Services` (prayer calculator, scheduler, location, audio, notification) → singleton or scoped.
-  - `MainViewModel`, `SettingsViewModel` → transient.
-- Services are injected into view models via constructor injection.
-- Resolve the active `MainViewModel` from the service provider; do not `new` it up in views.
-
-### Prayer Calculation
-- Prayer times come from the **`Adhan` library** (`PrayerCalculatorService` wraps it). Do **not**
-  hand-roll astronomical math — rely on Adhan for correctness.
-- Default calculation method: `CalculationMethod.MuslimWorldLeague` (from `Noor.Core/Models/AppSettings.cs`).
+### Prayer Calculation (IMPORTANT)
+- Prayer times come from the **built-in astronomical engine** in `PrayerCalculatorService`.
+- **Do not** introduce the `Adhan` NuGet package. The engine computes Julian Day, solar
+  declination, equation of time, and applies per-method Fajr/Isha/Maghrib angles plus the
+  Hanafi/Shafi Asr shadow factor. See the `#region Astronomical Calculations`.
+- Default calculation method: `CalculationMethod.MuslimWorldLeague`.
 - Default madhab: `Madhab.Hanafi`.
-- When the user changes method/madhab/location, recompute via `PrayerCalculatorService` and refresh
-  the scheduler.
-- High-latitude fallback: when Adhan cannot compute a time (extreme latitudes), fall back to a sane
-  default (e.g., Isha = 1.5h after Maghrib) and log a warning.
+- High-latitude fallback: when Isha is non-computable, it defaults to ~1.5h after Maghrib.
+- When changing the engine, update / add tests in `Noor.Tests` to lock in expected times for a
+  known location (regression guard).
 
 ### Scheduling (Quartz.NET)
 - `SchedulerService` owns a Quartz `IScheduler` plus per-prayer `System.Timers.Timer` instances.
@@ -127,21 +123,21 @@ Managed in `Directory.Packages.props`. Do **not** add `Version=` to `<PackageRef
 - **Never** store secrets in `settings.json` — it is plain text.
 
 ### Location
-- `LocationService` calls `http://ip-api.com/json/` (free, no API key) and maps the response to
+- `LocationService` calls `https://ipwho.is/` (free, HTTPS, no API key) and maps the response to
   `Coordinates`. All network exceptions are caught → returns `null` → caller falls back to the last
   known location or the Makkah default.
 - Users can override manually in Settings (lat/long/timezone/city/country).
 
 ### Block Screen / Focus Overlay
-- `BlockScreenOverlay` is a full-screen transparent window shown above all content during prayer.
+- `BlockScreenOverlay` is a `UserControl` added to `MainPage.BlockScreenHost`.
 - A `System.Timers.Timer` ticks every second; the overlay auto-dismisses when the countdown hits 0
   (and is also manually dismissible).
-- Countdown duration = `AppSettings.BlockDurationMinutes` (default 5, range 1–15).
+- Countdown duration = `AppSettings.BlockDurationMinutes` (default 20, range 1–120).
 
 ### Audio
-- `AudioService` uses **LibVLCSharp** with the native LibVLC binaries. `VideoLAN.LibVLC.*` packages
-  provide the native libs per platform.
-- Initialize one `LibVLC` instance (singleton) and reuse it; never spin up multiple media players.
+- `AudioService` uses `NAudio.Wave.WaveOutEvent`. `LibVLC`/`WaveOut` from NAudio is **Windows-native**.
+- On non-Windows desktops, audio needs a cross-platform backend (tracked as a roadmap item).
+- The `LibVLC`/NAudio output is initialized lazily and reused; never spin up multiple outputs.
 - Default azan path is empty (no bundled audio). Users select a file in Settings; if absent, audio is skipped.
 
 ---
@@ -151,38 +147,39 @@ Managed in `Directory.Packages.props`. Do **not** add `Version=` to `<PackageRef
 ### Naming
 - Types: `PascalCase`. Interfaces: `I`-prefixed.
 - Private fields: `_camelCase`.
-- AXAML files match the code-behind class: `MainWindow.axaml` ↔ `MainWindow`.
-- Namespaces match folders: `Noor.Core.Services`, `Noor.App.Views`, `Noor.App.ViewModels`.
+- XAML files match the code-behind class: `MainPage.xaml` ↔ `MainPage`.
+- Namespaces match folders: `Noor.Services`, `Noor.Views`, `Noor.Models`, `Noor.ViewModels`.
 
 ### Async
 - All I/O and scheduling methods are `async Task`. No `.Result` / `.Wait()`.
-- UI event handlers may be `async void` only where Avalonia requires it.
+- UI event handlers may be `async void` only where Avalonia/WinUI requires it.
 - Timer callbacks (`System.Timers.Timer.Elapsed`) must marshal to the UI thread via
-  `Dispatcher.UIThread.Post(...)` before touching observables bound to the UI.
+  `DispatcherQueue.TryEnqueue(...)` before touching UI elements.
 
 ### Error Handling
 - Network/IO calls are wrapped in try/catch with typed exception handlers (no catch-all swallowing).
-- Logging is via `ILogger<T>` (MS.Extensions.Logging) injected into services. Never swallow exceptions silently.
+- Logging is currently via `System.Diagnostics.Debug.WriteLine`; prefer structured logging where
+  available. Never swallow exceptions silently.
 
 ### Formatting & Style
 - Enforced via `.editorconfig` and `dotnet format`. PRs must pass
   `dotnet format --verify-no-changes`.
-- Use `DynamicResource` (not `StaticResource`) for theme-aware brushes in AXAML.
+- Use `ThemeResource` (not `StaticResource`) for theme-aware brushes in XAML.
 
 ---
 
-## App Startup Sequence (`Noor.App/Program.cs` → `App.axaml.cs`)
-1. Build DI container (services + view models).
-2. Configure logging from `appsettings.json`.
-3. Create `MainWindow`, resolve `MainViewModel` as `DataContext`.
-4. Load `AppSettings` from `settings.json` (creates defaults if missing).
-5. Apply requested theme (dark/light) from settings.
-6. `MainViewModel.OnLoaded` → resolve location (IP or default Makkah), start the scheduler, refresh the UI.
+## App Startup Sequence (`App.OnLaunched`)
+1. Create `MainWindow`, set icon.
+2. Load `AppSettings` from `settings.json` (creates defaults if missing).
+3. Apply requested theme (dark/light) from settings.
+4. Navigate the root `Frame` to `Views.MainPage`.
+5. `MainPage.OnLoaded` → `MainPageViewModel.InitializeAsync()`:
+   - load settings, resolve location (IP or default Makkah), start the scheduler, refresh the UI.
 
 ## Prayer Alert Sequence
 1. Scheduler fires `PrayerTimeReached`.
 2. `NotificationService.ShowPrayerNotification` plays azan (if enabled) and shows a notification.
-3. If `ShowBlockScreen` is enabled, `MainWindow` shows `BlockScreenOverlay` for the configured duration.
+3. If `ShowBlockScreen` is enabled, `MainPage` shows `BlockScreenOverlay` for the configured duration.
 
 ---
 
@@ -190,25 +187,28 @@ Managed in `Directory.Packages.props`. Do **not** add `Version=` to `<PackageRef
 
 ```bash
 dotnet restore
-dotnet build Noor.sln
-dotnet run --project Noor.App
+dotnet build Noor.sln -c Release
+dotnet run --project Noor
 dotnet test Noor.Tests
 dotnet format Noor.sln --verify-no-changes
 
-# Publish (self-contained single-file)
-dotnet publish Noor.App -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o ./publish/windows
-dotnet publish Noor.App -c Release -r linux-x64 --self-contained -p:PublishSingleFile=true -o ./publish/linux
+# Publish
+dotnet publish Noor -c Release -f net10.0-windows10.0.19041.0 -r win-x64 --self-contained -o ./publish/windows
+dotnet publish Noor -c Release -f net10.0-desktop -r linux-x64 --self-contained -o ./publish/linux
 ```
+
+> In CI / fresh environments set `NUGET_PACKAGES` to a writable cache on a partition with free space
+> (the Uno SDK restore is large).
 
 ---
 
 ## What NOT to Do
 
-- Do not add UI (Avalonia) namespaces to `Noor.Core`.
-- Do not hand-roll prayer-time astronomy — use `Adhan`.
+- Do not add UI namespaces (`Microsoft.UI.Xaml`, etc.) to `Services/` or `Models/`.
 - Do not hardcode prayer times, coordinates, or timezone offsets in logic (defaults in models are OK).
 - Do not use `Thread.Sleep` — use `Task.Delay` or Quartz triggers.
-- Do not spin up multiple LibVLC/media-player instances simultaneously.
+- Do not spin up multiple audio outputs simultaneously.
+- Do not introduce the `Adhan` package — use the built-in calculation engine.
 - Do not store secrets in `settings.json`.
 - Do not use `.Result` / `.Wait()` — always `await`.
 
@@ -216,9 +216,8 @@ dotnet publish Noor.App -c Release -r linux-x64 --self-contained -p:PublishSingl
 
 ## Reference Docs
 
-- Avalonia: https://docs.avaloniaui.net
-- CommunityToolkit.Mvvm: https://learn.microsoft.com/dotnet/communitytoolkit/mvvm
-- Adhan (prayer times): https://github.com/batoulapps/adhan-csharp
+- Uno Platform: https://docs.platform.uno
 - Quartz.NET: https://www.quartz-scheduler.net/documentation
-- LibVLCSharp: https://github.com/videolan/libvlcsharp
-- ip-api.com: https://ip-api.com
+- NAudio: https://github.com/naudio/NAudio
+- Umm al-Qura calendar (.NET): https://learn.microsoft.com/dotnet/api/system.globalization.umalquracalendar
+- ipwho.is: https://ipwho.is

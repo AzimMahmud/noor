@@ -29,6 +29,16 @@ If you discover a security vulnerability within Noor, please send an email to th
 
 This application stores user settings locally. No sensitive data (passwords, tokens) should ever be stored in configuration files.
 
+### Data & Privacy
+
+- The only network request the app makes by default is **IP geolocation** to estimate your city/timezone,
+  over **HTTPS** (`https://ipwho.is/`). No personal data is sent to any Noor-operated server — there is none.
+- You can disable network lookups entirely by entering your location manually in **Settings**.
+- All settings are stored as plain-text JSON under your user data directory
+  (`%LOCALAPPDATA%\Noor\settings.json` on Windows, `~/.local/share/Noor/settings.json` on Linux).
+  Do not store anything secret there.
+
 ## Contact
 
-For security-related inquiries, please open a private issue or contact the maintainer directly.
+For security-related inquiries, please open a **private security advisory** via the GitHub
+"Security" tab, or contact the maintainer directly.

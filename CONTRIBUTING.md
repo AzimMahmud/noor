@@ -14,8 +14,8 @@ Thank you for your interest in contributing! This document provides guidelines a
 1. **Fork** the repository
 2. **Clone** your fork:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/Noor.Uno.git
-   cd Noor.Uno
+   git clone https://github.com/YOUR_USERNAME/Noor.git
+   cd Noor
    ```
 3. **Build** the project:
    ```bash
@@ -25,20 +25,20 @@ Thank you for your interest in contributing! This document provides guidelines a
    ```bash
    dotnet run --project Noor
    ```
+5. **Run the tests**:
+   ```bash
+   dotnet test
+   ```
 
 ## Project Structure
 
 ```
-Noor.Uno/
-├── Noor/           # Main app project
-│   ├── Assets/              # SVG icons, splash screen
-│   ├── Models/              # Data models
-│   ├── Services/            # Business logic (prayer calc, audio, scheduling)
-│   ├── Styles/              # XAML resource dictionaries (Colors, Controls, Text)
-│   ├── ViewModels/          # MVVM view models
-│   └── Views/               # XAML pages and overlays
-├── .github/                 # CI workflows, issue templates
-├── CLAUDE.md                # Detailed architecture docs
+Noor/
+├── Noor/              # Main Uno app project (Views, ViewModels, Audio, Notifications, Styles)
+├── Noor.Core/         # UI-free domain logic (Models, prayer calc, Hijri, scheduling, location)
+├── Noor.Tests/        # xUnit + FluentAssertions unit tests
+├── .github/           # CI workflows, issue templates, funding, Dependabot
+├── CLAUDE.md          # Architecture & conventions (read this!)
 └── README.md
 ```
 
@@ -65,8 +65,9 @@ Noor.Uno/
 - Follow C# conventions (PascalCase for public, `_camelCase` for private fields)
 - Use `ThemeResource` not `StaticResource` for theme-aware brushes
 - All I/O and scheduling methods are `async Task` — no `.Result` or `.Wait()`
-- Keep `Noor.Core` free of UI dependencies (if applicable)
-- Wrap location/network calls in try/catch; log via `ILogger<T>`
+- Keep `Noor.Core` free of UI dependencies (`Microsoft.UI.Xaml`, etc.)
+- Wrap location/network calls in try/catch with typed handlers; log the error
+- When changing the prayer calculation engine, add/update tests in `Noor.Tests` to lock in expected times
 
 ## Pull Request Guidelines
 
@@ -74,18 +75,19 @@ Noor.Uno/
 - Describe what changed and why
 - Include screenshots for UI changes
 - Ensure `dotnet build` passes with 0 errors, 0 warnings
+- Ensure `dotnet test` passes
 - Keep PRs focused and small when possible
 
 ## Reporting Bugs
 
-Use the [Bug Report template](https://github.com/azimmahmud/Noor.Uno/issues/new?template=bug_report.yml) and include:
+Use the [Bug Report template](https://github.com/azimmahmud/Noor/issues/new?template=bug_report.yml) and include:
 - Steps to reproduce
 - Expected vs actual behavior
 - OS and .NET version
 
 ## Suggesting Features
 
-Use the [Feature Request template](https://github.com/azimmahmud/Noor.Uno/issues/new?template=feature_request.yml).
+Use the [Feature Request template](https://github.com/azimmahmud/Noor/issues/new?template=feature_request.yml).
 
 ## Code of Conduct
 
