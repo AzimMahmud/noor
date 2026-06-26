@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Noor
+GenericName=Prayer Times
+Comment=Islamic prayer time companion with accurate calculations and Hijri calendar
+Comment[ar]=رفيق أوقات الصلاة مع حسابات دقيقة والتقويم الهجري
+Exec=/usr/bin/noor %f
+Icon=noor
+Terminal=false
+Categories=Education;
+Keywords=islam;prayer;salah;salat;namaz;azan;athan;hijri;muslim;quran;
+StartupNotify=true
+StartupWMClass=Noor

@@ -14,6 +14,21 @@
 
 ---
 
+## Download & Install
+
+Prebuilt binaries for every release are on the [Releases page](https://github.com/AzimMahmud/Noor/releases).
+
+| Platform | File | How to install |
+|----------|------|----------------|
+| **Windows** | `NoorSetup-<ver>-win-x64.exe` | Run the installer (Inno Setup). Self-contained — no .NET needed. |
+| **Linux** (any distro) | `Noor-<ver>-linux-x64.AppImage` | `chmod +x` and double-click / run. No install, no root. |
+| **Linux** (Debian/Ubuntu) | `noor_<ver>-1_amd64.deb` | `sudo dpkg -i noor_*.deb` (or your app store). |
+
+> Builds are self-contained. See [Building from source](#build--run) or the
+> [packaging docs](packaging) for producing installers yourself.
+
+---
+
 ## Features
 
 ### Prayer Times

@@ -63,6 +63,10 @@ Noor/
 │   ├── Properties/              # launchSettings, publish profiles
 │   └── Strings/                 # localized resources (en)
 ├── Noor.Tests/                  # xUnit + FluentAssertions
+├── packaging/                   # installer assets + build scripts (Inno Setup, AppImage, .deb)
+│   ├── icons/                   # generated raster icons (noor.ico, noor.png, sized PNGs)
+│   ├── linux/                   # noor.desktop, build-appimage.sh, build-deb.sh
+│   └── windows/                 # noor.iss (Inno Setup), build-installer.ps1
 └── .github/                     # CI workflows, issue/PR templates, funding
 ```
 
@@ -195,10 +199,35 @@ dotnet format Noor.sln --verify-no-changes
 # Publish
 dotnet publish Noor -c Release -f net10.0-windows10.0.19041.0 -r win-x64 --self-contained -o ./publish/windows
 dotnet publish Noor -c Release -f net10.0-desktop -r linux-x64 --self-contained -o ./publish/linux
+
+# Build installers (output → dist/)
+./packaging/linux/build-appimage.sh        # → dist/Noor-<ver>-linux-x64.AppImage
+./packaging/linux/build-deb.sh             # → dist/noor_<ver>-1_amd64.deb
+pwsh packaging/windows/build-installer.ps1  # → dist/NoorSetup-<ver>-win-x64.exe (needs Inno Setup 6)
 ```
 
 > In CI / fresh environments set `NUGET_PACKAGES` to a writable cache on a partition with free space
 > (the Uno SDK restore is large).
+
+---
+
+## Packaging & Distribution
+
+Installers are produced by the scripts in `packaging/` and wired into the
+`release.yml` workflow (triggered by a `v*` tag push).
+
+| Platform | Format | Script | Output |
+|---|---|---|---|
+| Windows | Inno Setup `.exe` | `packaging/windows/build-installer.ps1` | `dist/NoorSetup-<ver>-win-x64.exe` |
+| Linux | AppImage (portable) | `packaging/linux/build-appimage.sh` | `dist/Noor-<ver>-linux-x64.AppImage` |
+| Linux | `.deb` (Debian/Ubuntu) | `packaging/linux/build-deb.sh` | `dist/noor_<ver>-1_amd64.deb` |
+
+- All builds are **self-contained** (no .NET runtime needed on the target machine); trimming is
+  **off** by default for Skia/XAML reliability.
+- The `.deb` installs the app to `/usr/lib/noor/` with a `/usr/bin/noor` launcher and hicolor icons.
+- The AppImage bundles the full publish output in an `AppDir` with a shell `AppRun`.
+- Version is read from `$NOOR_VERSION` (defaults to `1.0.0`); CI derives it from the git tag.
+- Raster icons in `packaging/icons/` are generated from `Noor/Assets/Icons/icon.svg`.
 
 ---
 
