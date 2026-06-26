@@ -1,7 +1,14 @@
-# These are supported funding model platforms
-
-github: []
-# patreon:
-# open_collective:
-# ko_fi: # replace with a single Ko-fi username
-# custom: ["https://example.com"]
+# These are supported funding model platforms.
+# Replace the placeholders below to enable the "Sponsor this project" button.
+#
+# github: [username]
+# patreon: # username
+# open_collective: # project name
+# ko_fi: # username
+# tidelift: # platform-name/package-name
+# community_bridge: # platform-name/package-name
+# liberapay: # username
+# issuehunt: # username
+# otechie: # username
+# lfx_crowdfunding: # platform-name/package-name
+# custom: ["https://your-url-here"]
