@@ -7,8 +7,6 @@ namespace Noor.Services;
 /// </summary>
 public class PrayerCalculatorService
 {
-    private const double EarthRadius = 6378.137; // km
-
     /// <summary>
     /// Calculates prayer times for a specific date and location.
     /// </summary>
@@ -19,11 +17,10 @@ public class PrayerCalculatorService
         CalculationMethod calculationMethod = CalculationMethod.MuslimWorldLeague)
     {
         var (lat, lng, tz) = (coordinates.Latitude, coordinates.Longitude, coordinates.TimeZoneOffset);
-        var jd = CalculateJulianDay(date.Year, date.Month, date.Day);
-        var times = CalculateTimes(jd, lat, lng, tz, calculationMethod);
+        var times = CalculateTimes(date, lat, lng, tz, calculationMethod);
 
         // Apply Asr Madhab adjustment
-        times.Asr = CalculateAsr(jd, lat, lng, tz, madhab);
+        times.Asr = CalculateAsr(date, lat, lng, tz, madhab);
 
         // Adjust for higher latitudes (Isha)
         times.Isha = AdjustIshaForHighLatitudes(times.Isha, times.Maghrib, lat);
@@ -136,63 +133,36 @@ public class PrayerCalculatorService
 
     #region Astronomical Calculations
 
-    private static double CalculateJulianDay(int year, int month, int day)
+    /// <summary>
+    /// Computes the solar declination (degrees) and the equation of time (hours) for a date,
+    /// using the Spencer (1971) / NOAA fractional-year approximation. Accurate to within
+    /// ~0.01° declination and ~0.5 minute of the equation of time — more than sufficient for
+    /// minute-granularity prayer times.
+    /// </summary>
+    private static (double declination, double equationOfTime) CalculateSunParameters(DateOnly date)
     {
-        if (month <= 2)
-        {
-            year -= 1;
-            month += 12;
-        }
+        var n = date.DayOfYear;
+        var gamma = 2.0 * Math.PI / 365.0 * (n - 1);
 
-        var A = Math.Floor(year / 100.0);
-        var B = 2 - A + Math.Floor(A / 4.0);
-        return Math.Floor(365.25 * (year + 4716)) + Math.Floor(30.6001 * (month + 1)) + day + B - 1524.5;
-    }
+        // Solar declination in radians (Spencer 1971), converted to degrees.
+        var declinationRad = 0.006918
+                           - 0.399912 * Math.Cos(gamma)
+                           + 0.070257 * Math.Sin(gamma)
+                           - 0.006758 * Math.Cos(2 * gamma)
+                           + 0.000907 * Math.Sin(2 * gamma)
+                           - 0.002697 * Math.Cos(3 * gamma)
+                           + 0.001480 * Math.Sin(3 * gamma);
+        var declination = declinationRad * 180.0 / Math.PI;
 
-    private static double CalculateSunPosition(double jd)
-    {
-        var D = jd - 2451545.0;
-        var g = 357.529 + 0.98560028 * D;
-        var q = 280.459 + 0.98564736 * D;
-        var L = q + 1.915 * Math.Sin(g * Math.PI / 180) + 0.020 * Math.Sin(2 * g * Math.PI / 180);
+        // Equation of time in minutes (NOAA), converted to hours.
+        var eqMinutes = 229.18 * (0.000075
+                        + 0.001868 * Math.Cos(gamma)
+                        - 0.032077 * Math.Sin(gamma)
+                        - 0.014615 * Math.Cos(2 * gamma)
+                        - 0.040849 * Math.Sin(2 * gamma));
+        var equationOfTime = eqMinutes / 60.0;
 
-        var e = 23.439 - 0.00000036 * D;
-        var RA = Math.Atan2(Math.Cos(e * Math.PI / 180) * Math.Sin(L * Math.PI / 180), Math.Cos(L * Math.PI / 180)) * 180 / Math.PI;
-
-        return (RA + 360) % 360;
-    }
-
-    private static (double declination, double equationOfTime) CalculateSunParameters(double jd)
-    {
-        var D = jd - 2451545.0;
-        var g = 357.529 + 0.98560028 * D;
-        var q = 280.459 + 0.98564736 * D;
-        var L = q + 1.915 * Math.Sin(g * Math.PI / 180) + 0.020 * Math.Sin(2 * g * Math.PI / 180);
-
-        var e = 23.439 - 0.00000036 * D;
-        var RA = Math.Atan2(Math.Cos(e * Math.PI / 180) * Math.Sin(L * Math.PI / 180), Math.Cos(L * Math.PI / 180)) * 180 / Math.PI;
-
-        var declination = Math.Asin(Math.Sin(e * Math.PI / 180) * Math.Sin(L * Math.PI / 180)) * 180 / Math.PI;
-
-        // Fix RA to be in 0-24 range first, then calculate eqT
-        var RA_hours = RA / 15.0;
-        RA_hours = RA_hours - Math.Floor(RA_hours);
-        if (RA_hours < 0) RA_hours += 24;
-
-        var q_hours = q / 15.0;
-        q_hours = q_hours - Math.Floor(q_hours);
-        if (q_hours < 0) q_hours += 24;
-
-        var EqT = q_hours - RA_hours;
-
-        return (declination, EqT);
-    }
-
-    private static TimeSpan FixHour(double hour)
-    {
-        hour = hour - Math.Floor(hour);
-        if (hour < 0) hour += 24;
-        return TimeSpan.Zero;
+        return (declination, equationOfTime);
     }
 
     /// <summary>
@@ -215,103 +185,97 @@ public class PrayerCalculatorService
         return new TimeSpan(hours, minutes, 0);
     }
 
-    private static PrayerTimeTimes CalculateTimes(double jd, double lat, double lng, double tz, CalculationMethod method)
+    private static PrayerTimeTimes CalculateTimes(DateOnly date, double lat, double lng, double tz, CalculationMethod method)
     {
-        var (declination, eqT) = CalculateSunParameters(jd);
-        var calcParams = GetCalculationParameters(method);
+        var (declination, eqT) = CalculateSunParameters(date);
+        var p = GetCalculationParameters(method);
 
-        var D = jd - 2451545.0;
+        // Solar noon (base time for every sun-angle calculation): 12 + tz - lng/15 - eqT
+        var noon = 12 + tz - lng / 15.0 - eqT;
 
-        // Calculate times using timezone
-        var times = new PrayerTimeTimes();
+        var times = new PrayerTimeTimes
+        {
+            // Morning prayers subtract the hour angle; evening prayers add it.
+            Fajr = HourAngleTime(noon, p.FajrAngle, lat, declination, morning: true),
+            Sunrise = HourAngleTime(noon, 0.833, lat, declination, morning: true),
+            Dhuhr = ConvertHourToTimeSpan(NormalizeHour(noon)),
+            Maghrib = AddMinutes(HourAngleTime(noon, 0.833, lat, declination, morning: false), p.MaghribMinutesAfterSunset),
+            // Asr is assigned separately based on the madhab.
+        };
 
-        times.Maghrib = CalculateTime(-calcParams.Maghrib, lat, lng, tz, declination, eqT, calcParams);
-        times.Isha = CalculateTime(calcParams.Isha, lat, lng, tz, declination, eqT, calcParams);
+        // Isha: angle-based for most methods; fixed minutes after Maghrib for others.
+        if (p.IshaAngle > 0)
+            times.Isha = HourAngleTime(noon, p.IshaAngle, lat, declination, morning: false);
+        else
+            times.Isha = AddMinutes(times.Maghrib, p.IshaMinutesAfterMaghrib);
 
-        // Dhuhr formula: 12 + timezone - longitude/15 - eqT
-        var dhuhrHour = NormalizeHour(12 + tz - lng / 15.0 - eqT);
-        times.Dhuhr = ConvertHourToTimeSpan(dhuhrHour);
-
-        times.Sunrise = CalculateTime(-0.833, lat, lng, tz, declination, eqT, calcParams);
-        times.Fajr = CalculateTime(calcParams.Fajr, lat, lng, tz, declination, eqT, calcParams);
-
-        // Asr is calculated separately based on Madhab
         return times;
     }
 
-    private static TimeSpan CalculateAsr(double jd, double lat, double lng, double tz, Madhab madhab)
+    private static TimeSpan CalculateAsr(DateOnly date, double lat, double lng, double tz, Madhab madhab)
     {
-        var (declination, eqT) = CalculateSunParameters(jd);
-        var D = jd - 2451545.0;
+        var (declination, eqT) = CalculateSunParameters(date);
+        var noon = 12 + tz - lng / 15.0 - eqT;
 
-        // Shafi: shadow = 1 + length, Hanafi: shadow = 2 * length
+        // Shafi: shadow length = 1 × object; Hanafi: shadow length = 2 × object.
         var shadowFactor = (madhab == Madhab.Hanafi) ? 2.0 : 1.0;
 
-        var altDiff = Math.Abs(lat - declination) * Math.PI / 180.0;
-        var arc = -Math.Atan(1.0 / (shadowFactor + Math.Tan(altDiff))) * 180 / Math.PI;
+        // Sun altitude at which the object's shadow equals shadowFactor × its height.
+        var altDiffRad = Math.Abs(lat - declination) * Math.PI / 180.0;
+        var altitudeDeg = -Math.Atan(1.0 / (shadowFactor + Math.Tan(altDiffRad))) * 180.0 / Math.PI;
 
-        return CalculateTime(arc, lat, lng, tz, declination, eqT, new CalculationParameters(0, 0, 0));
+        // Asr is always in the afternoon.
+        return HourAngleTime(noon, altitudeDeg, lat, declination, morning: false);
     }
 
-    private static TimeSpan CalculateTime(double angle, double lat, double lng, double tz, double declination, double eqT, CalculationParameters parameters)
+    /// <summary>
+    /// Computes a prayer time from the sun's hour angle for a given depression angle.
+    /// Morning prayers (Fajr, Sunrise) subtract the hour angle; evening prayers (Maghrib, Isha) add it.
+    /// </summary>
+    private static TimeSpan HourAngleTime(double noonHour, double angleDeg, double lat, double declination, bool morning)
     {
-        try
-        {
-            var latRad = lat * Math.PI / 180.0;
-            var declRad = declination * Math.PI / 180.0;
-            var angleRad = angle * Math.PI / 180.0;
+        var latRad = lat * Math.PI / 180.0;
+        var declRad = declination * Math.PI / 180.0;
+        var angleRad = angleDeg * Math.PI / 180.0;
 
-            var num = -Math.Sin(angleRad) - Math.Sin(latRad) * Math.Sin(declRad);
-            var den = Math.Cos(latRad) * Math.Cos(declRad);
+        var num = -Math.Sin(angleRad) - Math.Sin(latRad) * Math.Sin(declRad);
+        var den = Math.Cos(latRad) * Math.Cos(declRad);
 
-            if (Math.Abs(den) < 0.0001)
-            {
-                return TimeSpan.Zero;
-            }
-
-            var value = num / den;
-
-            if (value < -1) value = -1;
-            if (value > 1) value = 1;
-
-            var h = Math.Acos(value) * 180 / Math.PI / 15.0;
-
-            // Prayer time formula: T = 12 + timezone - longitude/15 - eqT - H
-            var time = 12 + tz - lng / 15.0 - eqT - (angle > 0 ? h : -h);
-
-            // Normalize the time to be between 0 and 24
-            time = NormalizeHour(time);
-
-            var hours = (int)time;
-            var minutes = (int)((time - hours) * 60);
-
-            return new TimeSpan(hours, minutes, 0);
-        }
-        catch
-        {
+        if (Math.Abs(den) < 0.0001)
             return TimeSpan.Zero;
-        }
+
+        var cosH = Math.Clamp(num / den, -1.0, 1.0);
+        var hourAngle = Math.Acos(cosH) * 180.0 / Math.PI / 15.0;
+
+        var time = morning ? noonHour - hourAngle : noonHour + hourAngle;
+        return ConvertHourToTimeSpan(NormalizeHour(time));
+    }
+
+    private static TimeSpan AddMinutes(TimeSpan baseTime, int minutes)
+    {
+        if (minutes == 0) return baseTime;
+        return ConvertHourToTimeSpan(NormalizeHour(baseTime.TotalHours + minutes / 60.0));
     }
 
     private static CalculationParameters GetCalculationParameters(CalculationMethod method)
     {
         return method switch
         {
-            CalculationMethod.MuslimWorldLeague => new CalculationParameters(18, 17, 90),
-            CalculationMethod.ISNA => new CalculationParameters(15, 15, 90),
-            CalculationMethod.Egyptian => new CalculationParameters(19.5, 17.5, 90),
-            CalculationMethod.Makkah => new CalculationParameters(18.5, 90, 90),
-            CalculationMethod.Karachi => new CalculationParameters(18, 18, 90),
-            CalculationMethod.Tehran => new CalculationParameters(17.7, 14, 90),
-            CalculationMethod.Jafari => new CalculationParameters(16, 14, 90),
-            CalculationMethod.Gulf => new CalculationParameters(19.5, 90, 90),
-            CalculationMethod.Kuwait => new CalculationParameters(18, 17.5, 90),
-            CalculationMethod.Qatar => new CalculationParameters(18, 18, 90),
-            CalculationMethod.Singapore => new CalculationParameters(20, 18, 90),
-            CalculationMethod.Turkey => new CalculationParameters(18, 17, 90),
-            CalculationMethod.MoonsightingCommittee => new CalculationParameters(18, 18, 90),
-            CalculationMethod.Dubai => new CalculationParameters(18.2, 18.2, 90),
-            _ => new CalculationParameters(18, 17, 90)
+            CalculationMethod.MuslimWorldLeague => new(18, 17, 0, 0),
+            CalculationMethod.ISNA => new(15, 15, 0, 0),
+            CalculationMethod.Egyptian => new(19.5, 17.5, 0, 0),
+            CalculationMethod.Makkah => new(18.5, 0, 90, 0), // Isha 90 min after Maghrib
+            CalculationMethod.Karachi => new(18, 18, 0, 0),
+            CalculationMethod.Tehran => new(17.7, 14, 0, 0),
+            CalculationMethod.Jafari => new(16, 14, 0, 0),
+            CalculationMethod.Gulf => new(19.5, 0, 90, 0), // Isha 90 min after Maghrib
+            CalculationMethod.Kuwait => new(18, 17.5, 0, 0),
+            CalculationMethod.Qatar => new(18, 0, 90, 0), // Isha 90 min after Maghrib
+            CalculationMethod.Singapore => new(20, 18, 0, 0),
+            CalculationMethod.Turkey => new(18, 17, 0, 0),
+            CalculationMethod.MoonsightingCommittee => new(18, 18, 0, 0),
+            CalculationMethod.Dubai => new(18.2, 18.2, 0, 0),
+            _ => new(18, 17, 0, 0)
         };
     }
 
@@ -334,7 +298,7 @@ public class PrayerCalculatorService
         return isha;
     }
 
-    private record CalculationParameters(double Fajr, double Maghrib, double Isha);
+    private record CalculationParameters(double FajrAngle, double IshaAngle, int IshaMinutesAfterMaghrib, int MaghribMinutesAfterSunset);
 
     private class PrayerTimeTimes
     {
@@ -376,7 +340,7 @@ public static class PrayerTimesExtensions
     {
         if (use24Hour)
         {
-            return time.ToString(@"HH\:mm");
+            return time.ToString(@"hh\:mm");
         }
 
         var hours = time.Hours;
