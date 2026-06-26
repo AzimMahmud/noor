@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Coordinates` validation, and `AppSettings` validation/persistence.
 - Cross-platform line-ending policy via `.gitattributes`.
 - CI now runs the test suite (`dotnet test`) on Linux in addition to building Windows + Linux.
-- **CodeQL** security analysis workflow (weekly + on PRs) and **Dependabot** config for NuGet + Actions.
+- **Dependabot** config for NuGet + GitHub Actions version updates.
 - `CHANGELOG.md`, expanded `SECURITY.md` privacy section.
 
 ### Changed

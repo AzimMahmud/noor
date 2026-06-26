@@ -213,8 +213,8 @@ pwsh packaging/windows/build-installer.ps1  # → dist/NoorSetup-<ver>-win-x64.e
 
 ## Packaging & Distribution
 
-Installers are produced by the scripts in `packaging/` and wired into the
-`release.yml` workflow (triggered by a `v*` tag push).
+Installers are produced by the scripts in `packaging/` and built locally on each
+platform (no release automation — artifacts are uploaded manually to GitHub Releases).
 
 | Platform | Format | Script | Output |
 |---|---|---|---|
@@ -226,7 +226,7 @@ Installers are produced by the scripts in `packaging/` and wired into the
   **off** by default for Skia/XAML reliability.
 - The `.deb` installs the app to `/usr/lib/noor/` with a `/usr/bin/noor` launcher and hicolor icons.
 - The AppImage bundles the full publish output in an `AppDir` with a shell `AppRun`.
-- Version is read from `$NOOR_VERSION` (defaults to `1.0.0`); CI derives it from the git tag.
+- Version is read from `$NOOR_VERSION` (defaults to `1.0.0`).
 - Raster icons in `packaging/icons/` are generated from `Noor/Assets/Icons/icon.svg`.
 
 ---
